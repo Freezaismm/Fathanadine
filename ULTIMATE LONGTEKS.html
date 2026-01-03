@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>For Nadine Syakira Prettyyy</title>
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;700&family=Pacifico&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    
+    <style>
+        :root { 
+            --accent: #ff4d6d; 
+            --card-bg: #ffffff;
+        }
+
+        body {
+            margin: 0; padding: 0;
+            background: linear-gradient(180deg, #ffdee9 0%, #b5fffc 100%);
+            font-family: 'Quicksand', sans-serif;
+            display: flex; justify-content: center; align-items: center;
+            height: 100vh; overflow: hidden;
+        }
+
+        /* TOMBOL AUDIO */
+        .audio-control {
+            position: fixed; top: 20px; right: 20px;
+            z-index: 1000; width: 45px; height: 45px;
+            background: white; border-radius: 50%;
+            display: flex; justify-content: center; align-items: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            cursor: pointer; font-size: 20px; border: none;
+        }
+
+        .zoom-in { animation: zoomIn 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+        .zoom-out { animation: zoomOut 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+
+        @keyframes zoomIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+        @keyframes zoomOut { from { opacity: 1; transform: scale(1); } to { opacity: 0; transform: scale(1.1); } }
+
+        .container {
+            width: 88%; max-width: 360px;
+            background: var(--card-bg);
+            padding: 40px 25px; border-radius: 50px;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.1);
+            text-align: center; position: relative;
+        }
+
+        .btn-action {
+            padding: 16px 32px; border: none; border-radius: 20px;
+            background: var(--accent); color: white;
+            font-weight: 700; cursor: pointer; width: 100%;
+            box-shadow: 0 10px 20px rgba(255, 77, 109, 0.3);
+        }
+
+        input[type="text"] {
+            padding: 16px; width: 90%; border-radius: 18px; 
+            border: 2px solid #f0f0f0; margin-bottom: 20px; text-align: center; outline: none;
+        }
+
+        .puzzle-piece {
+            width: 55px; height: 55px; background: #fff1f3; 
+            border-radius: 20px; display: flex; align-items: center; justify-content: center;
+            font-weight: 700; cursor: pointer; color: var(--accent);
+        }
+        .puzzle-piece.selected { background: var(--accent); color: white; }
+
+        #typing-text { font-size: 14px; text-align: center; line-height: 1.7; height: 160px; overflow-y: auto; color: #555; }
+        h2 { font-family: 'Pacifico', cursive; color: var(--accent); font-size: 26px; margin-bottom: 5px; }
+        p { color: #888; font-size: 13px; }
+        .hidden { display: none !important; }
+        .heart-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
+        .heart-item { font-size: 24px; cursor: pointer; }
+        
+        input[type="range"] { -webkit-appearance: none; width: 100%; height: 8px; background: #eee; border-radius: 10px; margin: 20px 0; }
+        input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 24px; height: 24px; background: var(--accent); border-radius: 50%; border: 4px solid white; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <button class="audio-control" id="audioToggle">🎵</button>
+
+    <audio id="bgMusic" loop>
+        <source src="https://files.catbox.moe/fv93nj.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="sfxClick" preload="auto">
+        <source src="https://www.soundjay.com/buttons/sounds/button-16.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="sfxSuccess" preload="auto">
+        <source src="https://www.soundjay.com/misc/sounds/bell-ringing-05.mp3" type="audio/mpeg">
+    </audio>
+
+    <div class="container zoom-in" id="mainCard">
+        <div id="lvl1">
+            <h2>Butuh password nihh</h2>
+            <p>Nah ini tu cara kita bilang sayangg...</p>
+            <div style="margin: 25px 0;">
+                <input type="text" id="passInput" placeholder="masukkan passwordnyaa">
+                <button id="btn-pass" class="btn-action">Mulai Petualangan ✨</button>
+            </div>
+        </div>
+
+        <div id="lvl2" class="hidden">
+            <h2>Susun Kata</h2>
+            <p>Kata simple tapi bermakna</p>
+            <div id="puzzle-box" class="heart-grid" style="margin: 20px 0;"></div>
+            <p id="puzzle-result" style="color:var(--accent); font-weight:700; min-height: 20px;"></p>
+        </div>
+
+        <div id="lvl3" class="hidden">
+            <h2>Tebak Ini apa hayoo</h2>
+            <div id="blur-img" style="font-size:80px; filter:blur(20px);">🦚</div>
+            <input type="range" id="blur-slider" min="0" max="20" value="20" oninput="playClick()">
+            <div id="blur-input-area" class="hidden">
+                <input type="text" id="blur-answer" placeholder="Nama hewan ini?">
+                <button id="btn-blur" class="btn-action">Check 🔍</button>
+            </div>
+        </div>
+
+        <div id="lvl4" class="hidden">
+            <h2>Cari Perbedaan</h2>
+            <div id="heart-grid" class="heart-grid" style="margin: 20px 0;"></div>
+        </div>
+
+        <div id="lvl5" class="hidden">
+            <h2>Blind box</h2>
+            <div style="display:flex; gap:20px; justify-content:center; margin: 20px 0;">
+                <div onclick="finalStep()" class="puzzle-piece" style="width:100px; height:100px; font-size:50px;">🎁</div>
+                <div onclick="finalStep()" class="puzzle-piece" style="width:100px; height:100px; font-size:50px;">🎁</div>
+            </div>
+        </div>
+
+        <div id="message-ui" class="hidden">
+            <h2>💌 For My Nadine</h2>
+            <div id="typing-text"></div>
+            <button id="next-btn" class="btn-action" style="margin-top:20px;">Lanjut ✨</button>
+        </div>
+    </div>
+
+    <script>
+        const sfxClick = document.getElementById('sfxClick');
+        const sfxSuccess = document.getElementById('sfxSuccess');
+        const music = document.getElementById('bgMusic');
+        const audioBtn = document.getElementById('audioToggle');
+
+        function playClick() { sfxClick.currentTime = 0; sfxClick.play().catch(()=>{}); }
+        function playSuccess() { sfxSuccess.currentTime = 0; sfxSuccess.play().catch(()=>{}); }
+
+        // Mute/Unmute Logic
+        audioBtn.onclick = () => {
+            if (music.paused) {
+                music.play();
+                audioBtn.innerText = "🎵";
+            } else {
+                music.pause();
+                audioBtn.innerText = "🔇";
+            }
+        };
+
+        let currentLvl = 1;
+        let typingTimer;
+        const passwordBenar = "je t'aime"; 
+        const kataPuzzle = "PROUD";
+        const texts = [
+            "Yeyy pintu terbukaaaa\n\nSelamat datangg di lontekss malam inii yaaaa, jadiii inii longteks yang sangat spesial buat kamuu nihhh, ini ku buat dengann sepenuhh hatii untuk mengapresiasi kamu harii inii..\n\n jadii di longteks harii inii akuu mau membahas beberapa topikkk nihhh, jadii marii kitaa mulaaii topik yang pertamaa.. eitss tapi main duli lagi dongg",
+            "WOWWW PROUDD!!!! VERYY PROUDD OF UU SAYANGGG \n\n kenapaaa topik pertama yaitu proudd? karenaa aku banggaa bangett samaa kamuu, sudaa ku ceritakan ke mas rega semuaa tuu se banggaa apaa aku ke kamuu, aku bersyukur punyaa support systemm kaya kamu di tengahh sulitnyaa duniaku inii, aku tidaa tauu mau berterimakasih gimanaa lagii. tapii yang paling penting aku akan tetap memperjuangkan kamuu. yapss mintaa maaf yaa kalau hari inu aku kurang bersyukurr, banyak mintaa, minta fotbar, minta gopub dan lain lainnn.. yaa at the end itu memang sulit terwujudd, tapi gapapaa semua hal yang aku inginkan sudaa pernah kamu alami di dalam hidupmuu, jadii yasudaa dehh let it floww ajaa, dann kitaa move on ke topik selanjutnyaaa.",
+            "WAWW MERAKK YAAAA, KAMU TAU GAA KENAPA MERAKK? NAHH KARENAA DIAA ITUU HEWAN TERCANTIK DI DUNIAAA \n\nDann sangatt cocok buat kamuu, karenaa kamu manusia tercantik di duniaaa, jadii yaa wajar ajaa kalau hewan yang kamu lihat itu merakk, karena sama sama tercantik di duniaa. makasihh yaa udaa jadii sesuatu yang indahh di hidup akuu yang penuh dengann keburukann iniii, makasihh udaa jadi warnaa untuk kehidupankuu yangg sangat abu abu iniii, jadiii aku gabakalan bosenn dehh buat memuji kamuu karenaa memang layak dann memang wanitaa tercantik di duniaaa, kenapaa aku bisa bilang gituuu? karenaa aku tuu bisa melihat kecantikanmu bahkann ketika kamu di tengah tengah banyakk wanita di luar sanaaa, contohnyaa kayaa di game selanjutnyaa nihhh",
+            "Tuhh kann benerr kata kuu jeli bangety kann? wkwkwkkwkw \n\n yaa begitulaahh kecantikanmu di duniaa inii tuuu, tiadaa taraa pokoonyaa mahh.. oh iyaa lupaaa terimakasihh yaa buat harii inii, sudaa nemeninn, dengerin aku ceritaaa, mau ak ajak main gamee walaupun gajadiii.. laluu yaaa walaupun endingnyaa kamu mungkin ketidurann atau lagi ngambekk tapii gapapaa deee aku sangat bersyukurr harii inii bisaa banyak ngorbol samaa kamuuu.. karenaa kamu udaa membuat aku bahagia hari inii jadinyaa aku mau kasih hadiah nihhh.. tapi blindboxx, pilih ajaa dehh",
+            "WAWWW DAPAT SECREETT YANG ISINYAA UCAPAN SELAMAT MALAMM! ❤️\n\ngoodnightt yaa sayanggg, selamaatt beristirahaattt yaaaa, seruu bangett yaa hari inii, bisa ketemu artisss, kumpul bersama keluargaa kecill, bisaa mam banyakk banyakkk, dann lebih banyak lagi dehhh.. jadii semogaa kalau kamu udaa boboo, boboo yang nyenyakk yaaa sayanggg.. mimpiin aku kalau bisaaa wkwkwkkw.. yasudaaa paipaii papaiii assalamualaikum sayanggg.. 3 2 1 penceettt"
+        ];
+
+        function transition(hideId, showId, callback) {
+            const container = document.getElementById('mainCard');
+            container.classList.add('zoom-out');
+            setTimeout(() => {
+                document.getElementById(hideId).classList.add('hidden');
+                document.getElementById(showId).classList.remove('hidden');
+                container.classList.remove('zoom-out');
+                container.classList.add('zoom-in');
+                if(callback) callback();
+            }, 400);
+        }
+
+        function showMessage(idx) {
+            playSuccess();
+            let activeId = "";
+            document.querySelectorAll('.container > div').forEach(el => { if(!el.classList.contains('hidden')) activeId = el.id; });
+
+            transition(activeId, 'message-ui', () => {
+                const box = document.getElementById('typing-text');
+                const btn = document.getElementById('next-btn');
+                box.innerHTML = "";
+                let i = 0;
+                (function type() {
+                    if (i < texts[idx].length) {
+                        box.innerHTML += texts[idx].charAt(i);
+                        i++;
+                        typingTimer = setTimeout(type, 50);
+                    }
+                })();
+
+                btn.onclick = () => {
+                    playClick();
+                    if(idx === 4) {
+                        confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, shapes: ['heart'] });
+                        alert("JE T'AIMEE BIEENNN MONN AMOUURRR🫰🏻🫰🏻🫰🏻🫶🏻🫶🏻🫶🏻🫶🏻💗💗💗💕💞💞💞💞💞🤍🤍🤍🤍🤍🤍🤍🤍🤍🤍");
+                    } else {
+                        currentLvl++;
+                        transition('message-ui', `lvl${currentLvl}`, () => {
+                            if(currentLvl === 2) initPuzzle();
+                            if(currentLvl === 4) initHeartGame();
+                        });
+                    }
+                };
+            });
+        }
+
+        // Lvl 1
+        document.getElementById('btn-pass').onclick = () => {
+            playClick();
+            if(document.getElementById('passInput').value.toLowerCase() === passwordBenar) {
+                music.play().catch(()=>{}); 
+                showMessage(0);
+            } else alert("Masihh salah sayangg coba lagi yukk");
+        };
+
+        // Lvl 2
+        function initPuzzle() {
+            const box = document.getElementById('puzzle-box');
+            box.innerHTML = ""; let guess = "";
+            document.getElementById('puzzle-result').innerText = "";
+            kataPuzzle.split('').sort(() => Math.random() - 0.5).forEach(char => {
+                const p = document.createElement('div');
+                p.className = 'puzzle-piece'; p.innerText = char;
+                p.onclick = function() {
+                    playClick();
+                    if(!this.classList.contains('selected')) {
+                        this.classList.add('selected'); guess += char;
+                        document.getElementById('puzzle-result').innerText = guess;
+                        if(guess.length === kataPuzzle.length) {
+                            if(guess === kataPuzzle) setTimeout(() => showMessage(1), 500);
+                            else { alert("wkwkwkwk bukann dongg, bisaa kamu bisaaa"); initPuzzle(); }
+                        }
+                    }
+                };
+                box.appendChild(p);
+            });
+        }
+
+        // Lvl 3
+        document.getElementById('blur-slider').oninput = function() {
+            document.getElementById('blur-img').style.filter = `blur(${this.value}px)`;
+            if(this.value <= 2) document.getElementById('blur-input-area').classList.remove('hidden');
+        };
+        document.getElementById('btn-blur').onclick = () => {
+            playClick();
+            if(document.getElementById('blur-answer').value.toLowerCase() === "merak") showMessage(2);
+            else alert("waduhh its okeeyy sayangg you can try againnn");
+        };
+
+        // Lvl 4
+        function initHeartGame() {
+            const grid = document.getElementById('heart-grid'); grid.innerHTML = "";
+            const hearts = Array(24).fill("❤️"); hearts.push("🧡");
+            hearts.sort(() => Math.random() - 0.5).forEach(h => {
+                const span = document.createElement('div');
+                span.className = 'heart-item'; span.innerText = h;
+                span.onclick = () => { 
+                    playClick();
+                    if(h === "🧡") showMessage(3); else alert("hehehe masa yang ituu"); 
+                };
+                grid.appendChild(span);
+            });
+        }
+
+        function finalStep() { playClick(); showMessage(4); }
+    </script>
+</body>
+</html>
