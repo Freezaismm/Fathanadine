@@ -1,2 +1,0 @@
-# Fathanadine
-my journey 
